@@ -3,7 +3,7 @@ import './App.css'
 function App() {
   return (
     <main className="app">
-      <h1>Auth Playground</h1>
+      <h1 className="text-xl font-semibold">Auth Playground</h1>
     </main>
   )
 }
