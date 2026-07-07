@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import User from "../models/User.js";
+import crypto from "crypto";
 
 export const register = async (req, res) => {
     try {
@@ -24,12 +25,22 @@ export const register = async (req, res) => {
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
+        const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+        const emailVerificationTokenExpires = new Date(
+            Date.now() + 1000 * 60 * 60
+        );
+
         const user = await User.create({
             firstName,
             lastName,
             email: normalizedEmail,
             passwordHash,
+            emailVerificationToken,
+            emailVerificationTokenExpires,
+            isEmailVerified: false,
         });
+
+        const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${emailVerificationToken}`;
 
         return res.status(201).json({
             message: "User created successfully",
@@ -40,6 +51,7 @@ export const register = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 isEmailVerified: user.isEmailVerified,
+                verificationLink,
             }
         });
     } catch (error) {
