@@ -101,8 +101,6 @@ function RegisterPage() {
       return
     }
 
-    const { password, ...formValuesWithoutPassword } = formValues
-    console.log(formValuesWithoutPassword)
     setFormValues(initialFormValues)
     setErrors({})
   }
