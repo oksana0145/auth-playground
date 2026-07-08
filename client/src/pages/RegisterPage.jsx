@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const initialFormValues = {
   firstName: '',
@@ -45,6 +46,11 @@ function validateRegisterForm(values) {
 function RegisterPage() {
   const [formValues, setFormValues] = useState(initialFormValues)
   const [errors, setErrors] = useState({})
+  const [submitStatus, setSubmitStatus] = useState(`idle`)
+  const [submitMessage, setSubmitMessage] = useState(``)
+
+  const navigate = useNavigate()
+
   const passwordRequirements = [
     {
       label: 'at least 8 characters',
@@ -91,19 +97,46 @@ function RegisterPage() {
     })
   }
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
+  const handleSubmit = async (event) => {
+  event.preventDefault()
 
-    const validationErrors = validateRegisterForm(formValues)
-    setErrors(validationErrors)
+  const validationErrors = validateRegisterForm(formValues)
+  setErrors(validationErrors)
+  setSubmitMessage('')
+  setSubmitStatus('idle')
 
-    if (Object.keys(validationErrors).length > 0) {
-      return
+  if (Object.keys(validationErrors).length > 0) {
+    return
+  }
+
+  setSubmitStatus('loading')
+
+  try {
+    const response = await fetch('http://localhost:5000/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formValues),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Registration failed')
     }
 
+    setSubmitStatus('success')
+    setSubmitMessage('Check your email to verify account')
     setFormValues(initialFormValues)
     setErrors({})
+    navigate(`/check-email`)
+  } catch (error) {
+    setSubmitStatus('error')
+    setSubmitMessage(error.message)
   }
+}
+
 
   return (
     <section className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
@@ -214,16 +247,26 @@ function RegisterPage() {
             </div>
           </div>
 
+          {submitMessage && (
+  <p
+    className={`text-sm ${
+      submitStatus === 'success' ? 'text-green-600' : 'text-red-600'
+    }`}
+  >
+    {submitMessage}
+  </p>
+)}
+
           <button
-            className="w-full rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="w-full rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
             type="submit"
+            disabled={submitStatus === `loading`}
           >
-            Create account
+            {submitStatus === `loading` ? `Creating account..` : `Create account`}
           </button>
         </form>
       </div>
     </section>
   )
 }
-
 export default RegisterPage

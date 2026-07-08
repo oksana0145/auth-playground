@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import VerifyEmailPage from './pages/VerifyEmailPage.jsx'
+import CheckEmailPage from './pages/CheckEmailPage.jsx'
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
   <Routes>
     <Route path="/" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
+    <Route path="/check-email" element={<CheckEmailPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/verify-email" element={<VerifyEmailPage />} />
     <Route path="/dashboard" element={<DashboardPage />} />
