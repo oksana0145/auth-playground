@@ -130,7 +130,7 @@ function RegisterPage() {
     setSubmitMessage('Check your email to verify account')
     setFormValues(initialFormValues)
     setErrors({})
-    navigate(`/check-email`)
+    navigate(`/verify-email`)
   } catch (error) {
     setSubmitStatus('error')
     setSubmitMessage(error.message)
