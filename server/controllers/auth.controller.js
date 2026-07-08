@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import User from "../models/User.js";
 import crypto from "crypto";
+import { sendVerificationEmail } from "../utils/email.js";
 
 export const register = async (req, res) => {
     try {
@@ -41,9 +42,10 @@ export const register = async (req, res) => {
         });
 
         const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${emailVerificationToken}`;
+        await sendVerificationEmail(user.email, verificationLink);
 
         return res.status(201).json({
-            message: "User created successfully",
+            message: "User created successfully. Check your email to verify account.",
             user: {
                 id: user._id,
                 firstName: user.firstName,
@@ -51,7 +53,6 @@ export const register = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 isEmailVerified: user.isEmailVerified,
-                verificationLink,
             }
         });
     } catch (error) {
