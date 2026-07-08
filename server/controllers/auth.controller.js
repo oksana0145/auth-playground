@@ -63,3 +63,50 @@ export const register = async (req, res) => {
         });
     }
 };
+
+export const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.query;
+
+        if (!token) {
+            return res.status(400).json({
+                message: "Verification token is required",
+            });
+        }
+
+        const user = await User.findOne({
+            emailVerificationToken: token,
+        });
+
+        if (!user) {
+            return res.status(400).json({
+                message: "Invalid verification link",
+            });
+        }
+
+        if ( 
+            !user.emailVerificationTokenExpires ||
+            user.emailVerificationTokenExpires < new Date()
+        ) {
+            return res.status(400).json({
+                message: "Verification link has expired",
+            });
+        }
+
+        user.isEmailVerified = true;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationTokenExpires = undefined;
+
+        await user.save();
+
+        return res.status(200).json({
+            message: "Email verified successfully",
+        });
+    } catch (error) {
+        console.error("Verify email error:", error.message);
+
+        return res.status(500).json({
+            message: "Server error",
+        });
+    }
+}

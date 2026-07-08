@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register } from "../controllers/auth.controller.js";
+import { register, verifyEmail } from "../controllers/auth.controller.js";
 import { sendVerificationEmail } from "../utils/email.js";
 
 const router = Router();
@@ -16,6 +16,8 @@ router.get("/test-email", async (req,res) => {
 
     res.json({message: "Test email sent"});
 })
+
+router.get("/verify-email", verifyEmail);
 
 router.post("/register", register);
 
