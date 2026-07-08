@@ -1,6 +1,42 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 function VerifyEmailPage() {
+  const token = new URLSearchParams(window.location.search).get("token")
+
+  const [status, setStatus] = useState("loading")
+  const [message, setMessage] = useState("")
+
+  useEffect(() => {
+    const verifyEmail = async () => {
+      if (!token) {
+        setStatus("error")
+        setMessage("Verification token is missing")
+        return
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:5000/auth/verify-email?token=${token}`
+        )
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.message || "Email verification failed")
+        }
+
+        setStatus("success")
+        setMessage(data.message)
+      } catch (error) {
+        setStatus("error")
+        setMessage(error.message)
+      }
+    }
+
+    verifyEmail()
+  }, [token])
+  
   return (
     <section className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md rounded-xl bg-white p-8 text-center shadow-lg ring-1 ring-slate-200">
