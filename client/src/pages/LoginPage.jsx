@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { login } from '../api/authApi'
 
 const initialFormValues = {
   email: '',
@@ -51,7 +52,7 @@ function LoginPage() {
     })
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
     const validationErrors = validateLoginForm(formValues)
@@ -61,8 +62,13 @@ function LoginPage() {
       return
     }
 
-    const { password, ...formValuesWithoutPassword } = formValues
-    console.log(formValuesWithoutPassword)
+   try {
+    const data = await login(formValues)
+
+    console.log(data)
+  } catch (error) {
+    console.log(error.message)
+  }
   }
 
   return (

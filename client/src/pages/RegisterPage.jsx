@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { register } from '../api/authApi'
 
 const initialFormValues = {
   firstName: '',
@@ -112,19 +113,7 @@ function RegisterPage() {
   setSubmitStatus('loading')
 
   try {
-    const response = await fetch('http://localhost:5000/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formValues),
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Registration failed')
-    }
+    await register(formValues)
 
     setSubmitStatus('success')
     setSubmitMessage('Check your email to verify account')

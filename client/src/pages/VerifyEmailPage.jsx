@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { verifyEmail } from '../api/authApi'
 
 const pageContent = {
   "check-email": {
@@ -32,17 +33,9 @@ function VerifyEmailPage() {
 
   hasVerified.current = true
 
-  const verifyEmail = async () => {
+  const verifyEmailRequest = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/auth/verify-email?token=${token}`
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Email verification failed')
-      }
+      await verifyEmail(token)
 
       setStatus('success')
     } catch (error) {
@@ -51,7 +44,7 @@ function VerifyEmailPage() {
     }
   }
 
-  verifyEmail()
+  verifyEmailRequest()
 }, [token])
 
 const content = 
