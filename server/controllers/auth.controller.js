@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import User from "../models/User.js";
 import crypto from "crypto";
 import { sendVerificationEmail } from "../utils/email.js";
-import { generateAccessToken } from "../utils/token.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 
 export const register = async (req, res) => {
     try {
@@ -147,6 +147,17 @@ export const login = async (req, res) => {
         }
 
         const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
+
+        user.refreshToken = refreshToken;
+        await user.save();
+
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
 
 
         return res.status(200).json({

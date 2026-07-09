@@ -13,3 +13,15 @@ export const generateAccessToken = (user) => {
         }
     );
 };
+
+export const generateRefreshToken = (user) => {
+    return jwt.sign(
+        {
+            userId: user._id,
+        },
+        process.env.JWT_REFRESH_SECRET,
+        {
+            expiresIn: "7d",
+        }
+    );
+};
