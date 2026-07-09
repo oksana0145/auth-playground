@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, verifyEmail } from "../controllers/auth.controller.js";
+import { register, verifyEmail, login } from "../controllers/auth.controller.js";
 import { sendVerificationEmail } from "../utils/email.js";
 
 const router = Router();
@@ -20,5 +20,6 @@ router.get("/test-email", async (req,res) => {
 router.get("/verify-email", verifyEmail);
 
 router.post("/register", register);
+router.post("/login", login);
 
 export default router;
