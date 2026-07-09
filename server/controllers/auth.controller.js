@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import User from "../models/User.js";
 import crypto from "crypto";
 import { sendVerificationEmail } from "../utils/email.js";
+import { generateAccessToken } from "../utils/token.js";
 
 export const register = async (req, res) => {
     try {
@@ -144,15 +145,22 @@ export const login = async (req, res) => {
                 message: "Invalid email or password.",
             });
         }
+
+        const accessToken = generateAccessToken(user);
+
+
         return res.status(200).json({
             message: "Login successful",
-            user: user._id,
-            firstName: user.firstName,
-            email: user.email,
-            role: user.role,
-            isEmailVerified: user.isEmailVerified,
-        },
-    );
+            accessToken,
+            user: { 
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role,
+                isEmailVerified: user.isEmailVerified,
+            },
+        });
     } catch (error) {
         console.error("Login error:", error.message);
 
