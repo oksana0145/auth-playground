@@ -1,8 +1,14 @@
+import { useAuth } from '../context/AuthContext.jsx'
+
 function DashboardPage() {
-  const user = {
-    firstName: 'Alex',
-    lastName: 'Morgan',
-    role: 'User',
+  const {user, logoutUser} = useAuth()
+
+  if (!user) {
+    return (
+      <section className="flex min-h-screen items-center justify-center">
+        <p>Please sign in first</p>
+      </section>
+    )
   }
 
   return (
@@ -36,6 +42,7 @@ function DashboardPage() {
         <button
           className="mt-8 rounded-lg bg-indigo-600 px-5 py-3 font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           type="button"
+          onClick={logoutUser}
         >
           Logout
         </button>

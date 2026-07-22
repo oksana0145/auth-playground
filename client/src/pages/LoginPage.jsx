@@ -1,75 +1,78 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { login } from '../api/authApi'
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { login } from "../api/authApi";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const initialFormValues = {
-  email: '',
-  password: '',
-}
+  email: "",
+  password: "",
+};
 
 function validateLoginForm(values) {
-  const errors = {}
-  const emailDomain = values.email.split('@')[1]
+  const errors = {};
+  const emailDomain = values.email.split("@")[1];
 
   if (!values.email.trim()) {
-    errors.email = 'Invalid email adress'
-  } else if (!values.email.includes('@')) {
-    errors.email = 'Invalid email adress'
-  } else if (!emailDomain || !emailDomain.includes('.')) {
-    errors.email = 'Invalid email adress'
+    errors.email = "Invalid email adress";
+  } else if (!values.email.includes("@")) {
+    errors.email = "Invalid email adress";
+  } else if (!emailDomain || !emailDomain.includes(".")) {
+    errors.email = "Invalid email adress";
   }
 
   if (!values.password) {
-    errors.password = 'Invalid password'
+    errors.password = "Invalid password";
   }
 
-  return errors
+  return errors;
 }
 
 function LoginPage() {
-  const [formValues, setFormValues] = useState(initialFormValues)
-  const [errors, setErrors] = useState({})
+  const [formValues, setFormValues] = useState(initialFormValues);
+  const [errors, setErrors] = useState({});
+
+  const {loginUser, user, isAuthenticated} = useAuth();
 
   const getInputClassName = (fieldName) =>
     `w-full rounded-lg border px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
       errors[fieldName]
-        ? 'border-red-500 focus:border-red-500 focus:ring-red-100'
-        : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-100'
-    }`
+        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+        : "border-slate-300 focus:border-indigo-500 focus:ring-indigo-100"
+    }`;
 
   const handleChange = (event) => {
-    const { name, value } = event.target
+    const { name, value } = event.target;
     const nextFormValues = {
       ...formValues,
       [name]: value,
-    }
+    };
 
-    setFormValues(nextFormValues)
+    setFormValues(nextFormValues);
     setErrors((currentErrors) => {
-      const nextErrors = { ...currentErrors }
-      delete nextErrors[name]
-      return nextErrors
-    })
-  }
+      const nextErrors = { ...currentErrors };
+      delete nextErrors[name];
+      return nextErrors;
+    });
+  };
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    const validationErrors = validateLoginForm(formValues)
-    setErrors(validationErrors)
+    const validationErrors = validateLoginForm(formValues);
+    setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
-      return
+      return;
     }
 
-   try {
-    const data = await login(formValues)
+    try {
+      const data = await login(formValues);
 
-    console.log(data)
-  } catch (error) {
-    console.log(error.message)
-  }
-  }
+      loginUser(data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   return (
     <section className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
@@ -87,7 +90,7 @@ function LoginPage() {
               Email
             </label>
             <input
-              className={getInputClassName('email')}
+              className={getInputClassName("email")}
               id="email"
               name="email"
               type="email"
@@ -107,7 +110,7 @@ function LoginPage() {
               Password
             </label>
             <input
-              className={getInputClassName('password')}
+              className={getInputClassName("password")}
               id="password"
               name="password"
               type="password"
@@ -118,8 +121,8 @@ function LoginPage() {
               <p className="mt-2 text-sm text-red-600">{errors.password}</p>
             )}
             <p className="mt-2 text-left text-xs text-slate-500">
-              Password requirements: at least 8 characters, at least 1
-              uppercase letter, at least 1 number.
+              Password requirements: at least 8 characters, at least 1 uppercase
+              letter, at least 1 number.
             </p>
           </div>
 
@@ -129,10 +132,16 @@ function LoginPage() {
           >
             Sign in
           </button>
+
+          {isAuthenticated && (
+            <p className="mt-4 text-center text-green-600">
+              Logged in as {user.email}
+            </p>
+          )}
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-600">
-          Don&apos;t have an account?{' '}
+          Don&apos;t have an account?{" "}
           <Link
             className="font-medium text-indigo-600 hover:text-indigo-700"
             to="/register"
@@ -142,7 +151,7 @@ function LoginPage() {
         </p>
       </div>
     </section>
-  )
+  );
 }
 
-export default LoginPage
+export default LoginPage;
