@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, verifyEmail, login, getMe, } from "../controllers/auth.controller.js";
+import { register, verifyEmail, login, getMe, refresh, } from "../controllers/auth.controller.js";
 import { sendVerificationEmail } from "../utils/email.js";
 import { protect } from "../middleware/auth.middleware.js"
 
@@ -31,5 +31,7 @@ router.post("/register", register);
 router.post("/login", login);
 
 router.get("/me", protect, getMe);
+
+router.post("/refresh", refresh);
 
 export default router;

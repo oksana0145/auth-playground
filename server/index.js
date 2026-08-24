@@ -3,6 +3,7 @@ import express from 'express';
 import authRoutes from './routes/auth.routes.js';
 import { connectDB } from './config/db.js';
 import cors from "cors";
+import cookieParser from 'cookie-parser'
 
 connectDB();
 
@@ -16,6 +17,8 @@ app.use(cors({
 }))
 
 app.use(express.json());
+
+app.use(cookieParser());
 
 app.get("/health", (req, res) => {
     res.json({

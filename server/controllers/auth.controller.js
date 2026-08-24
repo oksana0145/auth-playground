@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import crypto from "crypto";
 import { sendVerificationEmail } from "../utils/email.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
+import jwt from 'jsonwebtoken'
 
 export const register = async (req, res) => {
     try {
@@ -209,4 +210,56 @@ export const getMe = async (req, res) => {
             message: "Server error",
         })
     }
+}
+
+export const refresh = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken
+
+        if (!refreshToken) {
+            return res.status(401).json({
+                message: "Refresh token is required",
+            })
+        }
+
+        const decodedToken = jwt.verify(
+            refreshToken,
+            process.env.JWT_REFRESH_SECRET
+        )
+
+        const user = await User.findOne({
+            _id: decodedToken.userId,
+            refreshToken: refreshToken,
+        })
+
+        if (!user) {
+            return res.status(401).json({
+                message: "Invalid refresh token",
+            })
+        }
+
+        const newAccessToken = generateAccessToken(user)
+        const newRefreshToken = generateRefreshToken(user)
+
+        user.refreshToken = newRefreshToken
+
+        await user.save()
+
+        res.cookie("refreshToken", newRefreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        })
+
+        return res.status(200).json({
+            accessToken: newAccessToken,
+        })
+} catch (error) {
+    console.error("Refresh token error:", error.message)
+    
+    return res.status(401).json({
+        message: "Invalid or expired refresh token",
+    })
+}
 }
