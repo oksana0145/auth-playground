@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { register, verifyEmail, login } from "../controllers/auth.controller.js";
 import { sendVerificationEmail } from "../utils/email.js";
+import { protect } from "../middleware/auth.middleware.js"
 
 const router = Router();
 
@@ -18,6 +19,13 @@ router.get("/test-email", async (req,res) => {
 })
 
 router.get("/verify-email", verifyEmail);
+
+router.get("/protected-test", protect, (req, res) => {
+    return res.status(200).json({
+        message: "Protected route works",
+        user: req.user,
+    });
+});
 
 router.post("/register", register);
 router.post("/login", login);
