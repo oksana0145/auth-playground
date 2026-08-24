@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, verifyEmail, login } from "../controllers/auth.controller.js";
+import { register, verifyEmail, login, getMe, } from "../controllers/auth.controller.js";
 import { sendVerificationEmail } from "../utils/email.js";
 import { protect } from "../middleware/auth.middleware.js"
 
@@ -29,5 +29,7 @@ router.get("/protected-test", protect, (req, res) => {
 
 router.post("/register", register);
 router.post("/login", login);
+
+router.get("/me", protect, getMe);
 
 export default router;

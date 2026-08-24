@@ -180,3 +180,33 @@ export const login = async (req, res) => {
         });
     }
 };
+
+export const getMe = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId).select(
+            "firstName lastName email role"
+        )
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            })
+        }
+
+        return res.status(200).json({
+            user: {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        console.error("Get current user error:", error.message)
+
+        return res.status(500).json({
+            message: "Server error",
+        })
+    }
+}
