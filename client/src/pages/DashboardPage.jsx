@@ -3,14 +3,6 @@ import { useAuth } from '../context/AuthContext.jsx'
 function DashboardPage() {
   const {user, logoutUser} = useAuth()
 
-  if (!user) {
-    return (
-      <section className="flex min-h-screen items-center justify-center">
-        <p>Please sign in first</p>
-      </section>
-    )
-  }
-
   return (
     <section className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-2xl rounded-xl bg-white p-8 shadow-lg ring-1 ring-slate-200">
