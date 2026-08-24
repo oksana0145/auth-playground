@@ -1,7 +1,41 @@
 import { useAuth } from '../context/AuthContext.jsx'
+import { useEffect, useRef } from 'react'
+import { apiFetch } from '../api/apiFetch.jsx'
 
 function DashboardPage() {
-  const {user, logoutUser} = useAuth()
+  const {user,
+    accessToken,
+    updateAccessToken,
+    logoutUser} = useAuth()
+
+    useEffect(() => {
+  if (!accessToken || hasLoadedUser.current) {
+    return
+  }
+
+  hasLoadedUser.current = true
+
+  const loadCurrentUser = async () => {
+      try {
+        const response = await apiFetch({
+          url: 'http://localhost:5000/auth/me',
+          accessToken,
+          updateAccessToken,
+          logoutUser,
+        })
+
+        const data = await response.json()
+
+        console.log('Current user:', data)
+      } catch (error) {
+        console.error(error.message)
+      }
+    }
+
+    if (accessToken) {
+      loadCurrentUser()
+    }
+  }, [accessToken])
 
   return (
     <section className="flex min-h-screen items-center justify-center bg-slate-50 px-4">

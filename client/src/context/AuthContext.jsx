@@ -19,6 +19,10 @@ export function AuthProvider ({ children }) {
 
     const isAuthenticated = Boolean(user && accessToken)
 
+     const updateAccessToken = (newAccessToken) => {
+    setAccessToken(newAccessToken)
+ };
+
     return (
         <AuthContext.Provider
         value={{
@@ -27,6 +31,7 @@ export function AuthProvider ({ children }) {
             isAuthenticated,
             loginUser,
             logoutUser,
+            updateAccessToken,
         }}
         >
             {children}
@@ -42,4 +47,4 @@ export function AuthProvider ({ children }) {
     }
 
     return context
- }
+ };
