@@ -39,3 +39,11 @@ export const apiFetch = async ({
         throw error
     }
 }
+
+export const logout = async () => {
+    const response = await fetch (`${API_URL}/logout`, {
+        method: "POST",
+        credentials: "include",
+    })
+    return handleResponse(response)
+}

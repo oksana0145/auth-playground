@@ -1,12 +1,17 @@
 import { useAuth } from '../context/AuthContext.jsx'
 import { useEffect, useRef } from 'react'
 import { apiFetch } from '../api/apiFetch.jsx'
+import { useNavigate } from 'react-router-dom'
+import { logout } from '../api/authApi.js'
 
 function DashboardPage() {
   const {user,
     accessToken,
     updateAccessToken,
     logoutUser} = useAuth()
+
+     const navigate = useNavigate()
+     const hasLoadedUser = useRef(false)
 
     useEffect(() => {
   if (!accessToken || hasLoadedUser.current) {
@@ -36,6 +41,19 @@ function DashboardPage() {
       loadCurrentUser()
     }
   }, [accessToken])
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+
+      logoutUser()
+
+      navigate("/login")
+    } catch (error) {
+      console.error("Logout error:", error.message)
+    }
+  }
+
 
   return (
     <section className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
@@ -68,7 +86,7 @@ function DashboardPage() {
         <button
           className="mt-8 rounded-lg bg-indigo-600 px-5 py-3 font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           type="button"
-          onClick={logoutUser}
+          onClick={handleLogout}
         >
           Logout
         </button>
