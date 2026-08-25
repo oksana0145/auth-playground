@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { login } from "../api/authApi";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -30,8 +30,10 @@ function validateLoginForm(values) {
 function LoginPage() {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const navigate = useNavigate();
 
-  const {loginUser, user, isAuthenticated} = useAuth();
+  const { loginUser } = useAuth();
 
   const getInputClassName = (fieldName) =>
     `w-full rounded-lg border px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
@@ -42,6 +44,7 @@ function LoginPage() {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    setSubmitError("");
     const nextFormValues = {
       ...formValues,
       [name]: value,
@@ -57,6 +60,7 @@ function LoginPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setSubmitError("");
 
     const validationErrors = validateLoginForm(formValues);
     setErrors(validationErrors);
@@ -67,10 +71,10 @@ function LoginPage() {
 
     try {
       const data = await login(formValues);
-
       loginUser(data);
+      navigate("/dashboard");
     } catch (error) {
-      console.log(error.message);
+      setSubmitError(error.message);
     }
   };
 
@@ -120,24 +124,20 @@ function LoginPage() {
             {errors.password && (
               <p className="mt-2 text-sm text-red-600">{errors.password}</p>
             )}
-            <p className="mt-2 text-left text-xs text-slate-500">
-              Password requirements: at least 8 characters, at least 1 uppercase
-              letter, at least 1 number.
-            </p>
           </div>
+
+           { submitError && (
+            <p className="mt-2 text-sm text-red-600">{submitError}</p>
+          )}
 
           <button
             className="w-full rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             type="submit"
           >
-            Sign in
-          </button>
+              Sign in
+            </button>
 
-          {isAuthenticated && (
-            <p className="mt-4 text-center text-green-600">
-              Logged in as {user.email}
-            </p>
-          )}
+      
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-600">

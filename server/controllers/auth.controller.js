@@ -284,13 +284,13 @@ export const logout = async (req, res) => {
         }
 
         res.clearCookie("refreshToken", {
-            httpOnle: true,
+            httpOnly: true,
             secure: false,
             sameSite: "lax",
         })
 
     return res.status(200).json({
-        message: "Logout successful",
+       message: "Logout successful",
     })
     } catch (error) {
         console.error("Logout error:", error.message)
