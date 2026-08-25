@@ -270,7 +270,7 @@ export const logout = async (req, res) => {
 
         if (!refreshToken) {
             return res.status(200).json({
-                message: "Logout succesful",
+                message: "Logout successful",
             })
         }
 
