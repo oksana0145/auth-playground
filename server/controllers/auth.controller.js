@@ -263,3 +263,40 @@ export const refresh = async (req, res) => {
     })
 }
 }
+
+export const logout = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken
+
+        if (!refreshToken) {
+            return res.status(200).json({
+                message: "Logout succesful",
+            })
+        }
+
+        const user = await User.findOne({
+            refreshToken,
+        })
+
+        if (user) {
+            user.refreshToken = undefined
+            await user.save()
+        }
+
+        res.clearCookie("refreshToken", {
+            httpOnle: true,
+            secure: false,
+            sameSite: "lax",
+        })
+
+    return res.status(200).json({
+        message: "Logout successful",
+    })
+    } catch (error) {
+        console.error("Logout error:", error.message)
+
+        return res.status(500).json({
+            message: "Server error",
+        })
+    }
+}
