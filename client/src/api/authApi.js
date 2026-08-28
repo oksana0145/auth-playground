@@ -1,10 +1,17 @@
-const API_URL = `http://localhost:5000/auth`;
+const API_URL = `${import.meta.env.VITE_API_URL}/auth`;
 
 const handleResponse = async (response) => {
-  const data = await response.json();
+  const contentType = response.headers.get("content-type");
+
+  const data = contentType?.includes("application/json")
+    ? await response.json()
+    : null;
 
   if (!response.ok) {
-    throw new Error(data.message || "Request failed");
+    const error = new Error(data?.message || "Request failed");
+    error.status = response.status;
+
+    throw error;
   }
 
   return data;
@@ -55,7 +62,6 @@ export const getMe = async (accessToken) => {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
-    credentials: "include",
   });
 
   return handleResponse(response);
@@ -65,6 +71,18 @@ export const refresh = async () => {
   const response = await fetch(`${API_URL}/refresh`, {
     method: "POST",
     credentials: "include",
+  });
+
+  return handleResponse(response);
+};
+
+export const resendVerificationEmail = async (email) => {
+  const response = await fetch(`${API_URL}/resend-verification`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
   });
 
   return handleResponse(response);
