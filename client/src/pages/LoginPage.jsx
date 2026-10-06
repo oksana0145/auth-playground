@@ -39,6 +39,7 @@ function LoginPage() {
   const [resendMessage, setResendMessage] = useState("");
   const [isResending, setIsResending] = useState(false);
   const [resendError, setResendError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { loginUser } = useAuth();
 
@@ -79,17 +80,22 @@ function LoginPage() {
     }
 
     try {
-      const data = await login(formValues);
-      loginUser(data);
-      navigate("/dashboard");
-    } catch (error) {
-      setSubmitError(error.message);
+  setIsSubmitting(true);
 
-      if (error.status === 403) {
-        setShowResendVerification(true);
-      }
-    }
-  };
+  const data = await login(formValues);
+
+  loginUser(data);
+  navigate("/dashboard");
+} catch (error) {
+  setSubmitError(error.message);
+
+  if (error.status === 403) {
+    setShowResendVerification(true);
+  }
+} finally {
+  setIsSubmitting(false);
+}
+  }
 
   const handleResendVerification = async () => {
     try {
@@ -109,11 +115,11 @@ function LoginPage() {
 
   return (
     <AuthLayout>
-      <h1 className="mb-8 text-center text-2xl font-semibold text-slate-900">
+      <h1 className="mb-8 text-center text-2xl font-semibold text-[#12343D]">
         Welcome back
       </h1>
 
-      <form className="space-y-5" onSubmit={handleSubmit}>
+      <form className="space-y-5" onSubmit={handleSubmit} noValidate>
         <FormInput
           label="Email"
           name="email"
@@ -133,47 +139,51 @@ function LoginPage() {
         />
 
         {submitError && (
-          <p className="mt-2 text-sm text-red-600">{submitError}</p>
+          <p className="text-sm text-red-600" role="alert">
+            {submitError}
+          </p>
         )}
 
         {showResendVerification && (
-          <div>
-            {resendMessage ? (
-              <p className="text-sm text-green-600">{resendMessage}</p>
-            ) : (
-              <>
-                <p className="text-sm text-slate-600">
-                  If the link expires, you can{" "}
-                  <button
-                    type="button"
-                    onClick={handleResendVerification}
-                    disabled={isResending}
-                    className="font-medium text-indigo-600 underline underline-offset-2 transition hover:text-indigo-700 disabled:cursor-not-allowed disabled:text-slate-400"
-                  >
-                    {isResending
-                      ? "Sending verification email..."
-                      : "request a new verification email"}
-                  </button>
-                  .
-                </p>
+  <div>
+    {resendMessage ? (
+      <p className="text-sm text-[#00546F]" role="status">
+        {resendMessage}
+      </p>
+    ) : (
+      <>
+        <p className="text-sm text-[#60777C]">
+          Didn&apos;t receive the verification email?{" "}
+          <button
+            type="button"
+            onClick={handleResendVerification}
+            disabled={isResending}
+            className="font-medium text-[#00546F] underline underline-offset-2 transition hover:text-[#004456] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isResending ? "Sending..." : "Resend email"}
+          </button>
+        </p>
 
-                {resendError && (
-                  <p className="mt-2 text-sm text-red-600">{resendError}</p>
-                )}
-              </>
-            )}
-          </div>
+        {resendError && (
+          <p className="mt-2 text-sm text-red-600" role="alert">
+            {resendError}
+          </p>
         )}
+      </>
+    )}
+  </div>
+)}
 
-        <Button type="submit">
-          Sign in
-          </Button>
+<Button type="submit" disabled={isSubmitting}>
+  {isSubmitting ? "Signing in..." : "Sign in"}
+</Button>
+        
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-600">
+      <p className="mt-6 text-center text-sm text-[#60777C]">
         Don&apos;t have an account?{" "}
         <Link
-          className="font-medium text-indigo-600 hover:text-indigo-700"
+          className="font-medium text-[#00546F] transition hover:text-[#004456]"
           to="/register"
         >
           Register
