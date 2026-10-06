@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { verifyEmail, resendVerificationEmail } from "../api/authApi";
+import AuthLayout from "../components/auth/AuthLayout.jsx";
 
 const pageContent = {
   "check-email": {
@@ -77,106 +78,133 @@ function VerifyEmailPage() {
   };
 
   return (
-    <section className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 text-center shadow-lg ring-1 ring-slate-200">
-        <h1 className="text-2xl font-semibold text-slate-900">
-          {content.title}
-        </h1>
+    <AuthLayout>
+      {status === "check-email" && (
+        <>
+          <h1 className="mb-4 text-center text-2xl font-semibold text-[#12343D]">
+            {content.title}
+          </h1>
 
-        <p className="mt-4 text-sm leading-6 text-slate-600">{content.text}</p>
+          <p className="text-center text-sm leading-6 text-[#60777C]">
+            {content.text}
+          </p>
 
-        {status === "check-email" && (
-          <div className="flex justify-center gap-4">
+          <p className="mt-6 text-center text-sm text-[#60777C]">
+            Already verified?{" "}
             <Link
-              className="font-medium text-indigo-600 hover:text-indigo-700"
+              className="font-medium text-[#00546F] transition hover:text-[#004456]"
               to="/login"
             >
-              Login
+              Sign in
             </Link>
+          </p>
+        </>
+      )}
 
-            <Link
-              className="font-medium text-indigo-600 hover:text-indigo-700"
-              to="/register"
-            >
-              Register
-            </Link>
+      {status === "loading" && (
+        <div className="text-center">
+          <div className="mx-auto mb-6 h-8 w-8 animate-spin rounded-full border-2 border-[#00546F]/20 border-t-[#00546F]" />
+
+          <h1 className="mb-4 text-2xl font-semibold text-[#12343D]">
+            {content.title}
+          </h1>
+
+          <p className="text-sm leading-6 text-[#60777C]">{content.text}</p>
+        </div>
+      )}
+      {status === "success" && (
+        <div className="text-center">
+          <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#D6FB00]/30 text-xl font-semibold text-[#00546F]">
+            ✓
           </div>
-        )}
-        <div className="mt-6 text-sm">
-          {status === "success" && (
-            <Link
-              className="inline-block rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition hover:bg-indigo-700"
-              to="/login"
+
+          <h1 className="mb-4 text-2xl font-semibold text-[#12343D]">
+            {content.title}
+          </h1>
+
+          <p className="mb-6 text-sm leading-6 text-[#60777C]">
+            {content.text}
+          </p>
+
+          <Link
+            className="block w-full rounded-xl bg-[#00546F] px-4 py-3 font-medium text-white transition hover:bg-[#004456] focus:outline-none focus:ring-2 focus:ring-[#00546F]/30 focus:ring-offset-2"
+            to="/login"
+          >
+            Go to login
+          </Link>
+        </div>
+      )}
+      {status === "error" && (
+        <div className="text-center">
+          <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl font-semibold text-red-600">
+            !
+          </div>
+
+          <h1 className="mb-4 text-2xl font-semibold text-[#12343D]">
+            {content.title}
+          </h1>
+
+          <p className="text-sm leading-6 text-red-600" role="alert">
+            {content.text}
+          </p>
+          {!showResendForm && !resendMessage && (
+            <button
+              type="button"
+              onClick={() => setShowResendForm(true)}
+              className="mt-6 font-medium text-[#00546F] underline underline-offset-2 transition hover:text-[#004456]"
             >
-              Go to login
-            </Link>
+              Request a new verification email
+            </button>
           )}
+          {showResendForm && !resendMessage && (
+            <div className="mt-6 space-y-4 text-left">
+              <label
+                className="block text-sm font-medium text-[#12343D]"
+                htmlFor="resendEmail"
+              >
+                Email
+              </label>
 
-          {status === "error" && (
-            <div>
-              {!showResendForm && !resendMessage && (
-                <button
-                  type="button"
-                  onClick={() => setShowResendForm(true)}
-                  className="font-medium text-indigo-600 underline underline-offset-2 transition hover:text-indigo-700"
-                >
-                  Request a new verification email
-                </button>
+              <input
+                id="resendEmail"
+                type="email"
+                value={resendEmail}
+                onChange={(event) => {
+                  setResendEmail(event.target.value);
+                  setResendError("");
+                }}
+                placeholder="Enter your email"
+                className="w-full rounded-xl border border-[#00546F]/15 bg-white/55 px-4 py-3 text-[#12343D] outline-none transition focus:border-[#00546F] focus:ring-2 focus:ring-[#00546F]/15"
+              />
+
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={isResending}
+                className="w-full rounded-xl bg-[#00546F] px-4 py-3 font-medium text-white transition hover:bg-[#004456] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isResending ? "Sending..." : "Send verification email"}
+              </button>
+              {resendError && (
+                <p className="text-center text-sm text-red-600" role="alert">
+                  {resendError}
+                </p>
               )}
-
-              {showResendForm && !resendMessage && (
-                <div className="mt-4 space-y-3">
-                  <input
-                    type="email"
-                    value={resendEmail}
-                    onChange={(event) => {
-                      setResendEmail(event.target.value);
-                      setResendError("");
-                    }}
-                    placeholder="Enter your email"
-                    aria-label="Email addres"
-                    className="w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={handleResendVerification}
-                    disabled={isResending}
-                    className="w-full rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-                  >
-                    {isResending ? "Sending..." : "Send verification email"}
-                  </button>
-
-                  {resendError && (
-                    <p className="text-sm text-red-600">{resendError}</p>
-                  )}
-                </div>
-              )}
-
-              {resendMessage && (
-                <p className="text-sm text-green-600">{resendMessage}</p>
-              )}
-
-              <div className="mt-4 flex justify-center gap-4">
-                <Link
-                  className="font-medium text-indigo-600 hover:text-indigo-700"
-                  to="/login"
-                >
-                  Login
-                </Link>
-
-                <Link
-                  className="font-medium text-indigo-600 hover:text-indigo-700"
-                  to="/register"
-                >
-                  Register
-                </Link>
-              </div>
+            </div>
+          )}
+          {resendMessage && (
+            <div className="mt-6 rounded-xl bg-[#D6FB00]/20 px-4 py-3">
+              <p
+                className="text-center text-sm leading-6 text-[#00546F]"
+                role="status"
+              >
+                {resendMessage}
+              </p>
             </div>
           )}
         </div>
-      </div>
-    </section>
+      )}
+    </AuthLayout>
   );
 }
 
