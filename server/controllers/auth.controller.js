@@ -140,7 +140,7 @@ export const login = async (req, res) => {
       });
     }
 
-     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -191,7 +191,7 @@ export const login = async (req, res) => {
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select(
-      "firstName lastName email role",
+      "firstName lastName email role isEmailVerified",
     );
 
     if (!user) {
@@ -207,6 +207,7 @@ export const getMe = async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        isEmailVerified: user.isEmailVerified,
       },
     });
   } catch (error) {
