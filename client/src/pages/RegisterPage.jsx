@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { register } from "../api/authApi";
 import AuthLayout from "../components/auth/AuthLayout.jsx";
 import FormInput from "../components/auth/FormInput.jsx";
@@ -73,27 +73,17 @@ function RegisterPage() {
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    const nextFormValues = {
-      ...formValues,
-      [name]: value,
-    };
+    setSubmitMessage("");
+    setSubmitStatus("idle");
 
-    setFormValues(nextFormValues);
+    setFormValues((currentValues) => ({
+      ...currentValues,
+      [name]: value,
+    }));
 
     setErrors((currentErrors) => {
-      if (!currentErrors[name]) {
-        return currentErrors;
-      }
-
-      const fieldErrors = validateRegisterForm(nextFormValues);
       const nextErrors = { ...currentErrors };
-
-      if (fieldErrors[name]) {
-        nextErrors[name] = fieldErrors[name];
-      } else {
-        delete nextErrors[name];
-      }
-
+      delete nextErrors[name];
       return nextErrors;
     });
   };
@@ -128,7 +118,7 @@ function RegisterPage() {
 
   return (
     <AuthLayout>
-      <h1 className="mb-8 text-center text-2xl font-semibold text-slate-900">
+      <h1 className="mb-8 text-center text-2xl font-semibold text-[#12343D]">
         Create account
       </h1>
 
@@ -165,15 +155,22 @@ function RegisterPage() {
           value={formValues.password}
           onChange={handleChange}
           error={errors.password}
+          showErrorMessage={false}
         />
 
         <div>
-          <ul className="mt-1 space-y-1 text-sm">
+          <p className="mb-2 text-sm text-[#60777C]">Password must contain:</p>
+
+          <ul className="space-y-1 text-sm">
             {passwordRequirements.map((requirement) => (
               <li
                 key={requirement.label}
                 className={
-                  requirement.isValid ? "text-green-600" : "text-slate-500"
+                  requirement.isValid
+                    ? "text-[#00546F]"
+                    : errors.password
+                      ? "text-red-600"
+                      : "text-[#60777C]"
                 }
               >
                 {requirement.isValid ? "✓" : "–"} {requirement.label}
@@ -182,12 +179,8 @@ function RegisterPage() {
           </ul>
         </div>
 
-        {submitMessage && (
-          <p
-            className={`text-sm ${
-              submitStatus === "success" ? "text-green-600" : "text-red-600"
-            }`}
-          >
+        {submitMessage && submitStatus === "error" && (
+          <p className="text-sm text-red-600" role="alert">
             {submitMessage}
           </p>
         )}
@@ -198,6 +191,15 @@ function RegisterPage() {
             : "Create account"}
         </Button>
       </form>
+      <p className="mt-6 text-center text-sm text-[#60777C]">
+        Already have an account?{" "}
+        <Link
+          className="font-medium text-[#00546F] transition hover:text-[#004456]"
+          to="/login"
+        >
+          Sign in
+        </Link>
+      </p>
     </AuthLayout>
   );
 }

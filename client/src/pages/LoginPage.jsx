@@ -80,22 +80,22 @@ function LoginPage() {
     }
 
     try {
-  setIsSubmitting(true);
+      setIsSubmitting(true);
 
-  const data = await login(formValues);
+      const data = await login(formValues);
 
-  loginUser(data);
-  navigate("/dashboard");
-} catch (error) {
-  setSubmitError(error.message);
+      loginUser(data);
+      navigate("/dashboard");
+    } catch (error) {
+      setSubmitError(error.message);
 
-  if (error.status === 403) {
-    setShowResendVerification(true);
-  }
-} finally {
-  setIsSubmitting(false);
-}
-  }
+      if (error.status === 403) {
+        setShowResendVerification(true);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleResendVerification = async () => {
     try {
@@ -145,39 +145,38 @@ function LoginPage() {
         )}
 
         {showResendVerification && (
-  <div>
-    {resendMessage ? (
-      <p className="text-sm text-[#00546F]" role="status">
-        {resendMessage}
-      </p>
-    ) : (
-      <>
-        <p className="text-sm text-[#60777C]">
-          Didn&apos;t receive the verification email?{" "}
-          <button
-            type="button"
-            onClick={handleResendVerification}
-            disabled={isResending}
-            className="font-medium text-[#00546F] underline underline-offset-2 transition hover:text-[#004456] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isResending ? "Sending..." : "Resend email"}
-          </button>
-        </p>
+          <div>
+            {resendMessage ? (
+              <p className="text-sm text-[#00546F]" role="status">
+                {resendMessage}
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-[#60777C]">
+                  Didn&apos;t receive the verification email?{" "}
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={isResending}
+                    className="font-medium text-[#00546F] underline underline-offset-2 transition hover:text-[#004456] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isResending ? "Sending..." : "Resend email"}
+                  </button>
+                </p>
 
-        {resendError && (
-          <p className="mt-2 text-sm text-red-600" role="alert">
-            {resendError}
-          </p>
+                {resendError && (
+                  <p className="mt-2 text-sm text-red-600" role="alert">
+                    {resendError}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         )}
-      </>
-    )}
-  </div>
-)}
 
-<Button type="submit" disabled={isSubmitting}>
-  {isSubmitting ? "Signing in..." : "Sign in"}
-</Button>
-        
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Signing in..." : "Sign in"}
+        </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-[#60777C]">
