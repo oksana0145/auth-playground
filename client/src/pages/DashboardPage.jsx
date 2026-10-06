@@ -77,7 +77,7 @@ function DashboardPage() {
           <div className="rounded-xl border border-[#00546F]/10 bg-white/40 p-4">
             <p className="text-sm text-[#60777C]">Email</p>
 
-            <p className="mt-1 font-medium text-[#12343D]">{user.email}</p>
+            <p className="mt-1 break-all font-medium text-[#12343D]">{user.email}</p>
           </div>
 
           <div className="rounded-xl border border-[#00546F]/10 bg-white/40 p-4">
