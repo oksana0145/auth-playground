@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "../api/apiFetch.jsx";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api/authApi.js";
+import AnimatedBackground from "../components/ui/AnimatedBackground.jsx";
 
 function DashboardPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -54,8 +55,10 @@ function DashboardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F7FCEB] px-4 py-8 sm:px-6">
-      <section className="mx-auto w-full max-w-3xl rounded-3xl border border-white/65 bg-white/45 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+  <main className="relative isolate min-h-screen px-4 py-8 sm:px-6">
+    <AnimatedBackground />
+
+    <section className="mx-auto w-full max-w-3xl rounded-3xl border border-white/65 bg-white/45 p-6 shadow-xl backdrop-blur-xl sm:p-8">
         <div className="border-b border-slate-200 pb-6">
           <p className="text-sm font-medium uppercase tracking-wide text-[#00546F]">
             Dashboard
