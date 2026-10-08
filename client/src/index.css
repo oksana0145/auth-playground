@@ -13,22 +13,23 @@
 }
 
 .gradient-blob--teal {
-  top: -15%;
-  right: -30%;
-  width: 150vw;
-  height: 35vw;
+  top: -25%;
+  left: -35%;
+  width: 110vw;
+  height: 55vw;
   background: #00546f;
-  opacity: 0.95;
-  animation: float-teal 7s ease-in-out infinite alternate;
+  opacity: 0.85;
+  animation: float-teal 9s ease-in-out infinite alternate;
 }
 
 .gradient-blob--lime {
   bottom: -20%;
   left: -30%;
-  width: 145vw;
-  height: 30vw;
+  width: 95vw;
+  height: 55vw;
+  min-height: 350px;
   background: #d6fb00;
-  opacity: 0.65;
+  opacity: 0.6;
   animation: float-lime 8s ease-in-out infinite alternate;
 }
 
@@ -40,23 +41,33 @@
   animation: float-soft 10s ease-in-out infinite alternate;
 }
 
+.gradient-blob--turquoise {
+  position: absolute;
+  bottom: -25%;
+  right: -35%;
+  width: 125vw;
+  height: 32vw;
+  min-height: 280px;
+  background: #20b7b1;
+  opacity: 0.55;
+  animation: float-turquoise 8s ease-in-out infinite alternate;
+}
+
 @keyframes float-teal {
   from {
-    transform: translate(-10%, -10%) rotate(-35deg);
+    transform: translate(-5%, -5%) rotate(-20deg);
   }
-
   to {
-    transform: translate(-35%, 30%) rotate(-15deg);
+    transform: translate(12%, 12%) rotate(-35deg);
   }
 }
 
 @keyframes float-lime {
   from {
-    transform: translate(-10%, 10%) rotate(-35deg);
+    transform: translate(-5%, 5%) rotate(-20deg);
   }
-
   to {
-    transform: translate(35%, -30%) rotate(-55deg);
+    transform: translate(12%, -12%) rotate(-35deg);
   }
 }
 
@@ -64,9 +75,17 @@
   from {
     transform: translate(0, 0) rotate(25deg);
   }
-
   to {
     transform: translate(-25%, 20%) rotate(45deg);
+  }
+}
+
+@keyframes float-turquoise {
+  from {
+    transform: translate(10%, 10%) rotate(-25deg);
+  }
+  to {
+    transform: translate(-12%, -15%) rotate(-35deg);
   }
 }
 

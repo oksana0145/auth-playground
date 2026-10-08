@@ -115,9 +115,10 @@ function LoginPage() {
 
   return (
     <AuthLayout>
-      <h1 className="mb-8 text-center text-2xl font-semibold text-[#12343D]">
-        Welcome back
-      </h1>
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl font-semibold text-[#12343D]">Welcome back</h1>
+        <p className="mt-1 text-sm text-[#60777C]">Sign in to your account</p>
+      </div>
 
       <form className="space-y-5" onSubmit={handleSubmit} noValidate>
         <FormInput

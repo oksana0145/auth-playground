@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { verifyEmail, resendVerificationEmail } from "../api/authApi";
 import AuthLayout from "../components/auth/AuthLayout.jsx";
+import { Mail } from "lucide-react";
 
 const pageContent = {
   "check-email": {
@@ -80,16 +81,23 @@ function VerifyEmailPage() {
   return (
     <AuthLayout>
       {status === "check-email" && (
-        <>
-          <h1 className="mb-4 text-center text-2xl font-semibold text-[#12343D]">
+        <div className="text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#D6FB00]/65">
+            <Mail
+              size={28}
+              strokeWidth={1.75}
+              className="text-[#00546F]"
+              aria-hidden="true"
+            />
+          </div>
+
+          <h1 className="mb-4 text-2xl font-semibold text-[#12343D]">
             {content.title}
           </h1>
 
-          <p className="text-center text-sm leading-6 text-[#60777C]">
-            {content.text}
-          </p>
+          <p className="text-sm leading-6 text-[#60777C]">{content.text}</p>
 
-          <p className="mt-6 text-center text-sm text-[#60777C]">
+          <p className="mt-6 text-sm text-[#60777C]">
             Already verified?{" "}
             <Link
               className="font-medium text-[#00546F] transition hover:text-[#004456]"
@@ -98,7 +106,7 @@ function VerifyEmailPage() {
               Sign in
             </Link>
           </p>
-        </>
+        </div>
       )}
 
       {status === "loading" && (
@@ -114,7 +122,7 @@ function VerifyEmailPage() {
       )}
       {status === "success" && (
         <div className="text-center">
-          <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#D6FB00]/30 text-xl font-semibold text-[#00546F]">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#D6FB00]/30 text-xl font-semibold text-[#00546F]">
             ✓
           </div>
 
@@ -136,7 +144,7 @@ function VerifyEmailPage() {
       )}
       {status === "error" && (
         <div className="text-center">
-          <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl font-semibold text-red-600">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-xl font-semibold text-red-600">
             !
           </div>
 

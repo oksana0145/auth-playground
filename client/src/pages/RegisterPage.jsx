@@ -118,14 +118,19 @@ function RegisterPage() {
 
   return (
     <AuthLayout>
-      <h1 className="mb-8 text-center text-2xl font-semibold text-[#12343D]">
-        Create account
-      </h1>
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl font-semibold text-[#12343D]">
+          Create account
+        </h1>
+
+        <p className="mt-1 text-sm text-[#60777C]">Join and get started</p>
+      </div>
 
       <form className="space-y-5" onSubmit={handleSubmit} noValidate>
         <FormInput
           label="First Name"
           name="firstName"
+          placeholder="Enter your first name"
           value={formValues.firstName}
           onChange={handleChange}
           error={errors.firstName}
@@ -134,6 +139,7 @@ function RegisterPage() {
         <FormInput
           label="Last Name"
           name="lastName"
+          placeholder="Enter your last name"
           value={formValues.lastName}
           onChange={handleChange}
           error={errors.lastName}
@@ -143,37 +149,48 @@ function RegisterPage() {
           label="Email"
           name="email"
           type="email"
+          placeholder="you@example.com"
           value={formValues.email}
           onChange={handleChange}
           error={errors.email}
         />
 
-        <FormInput
-          label="Password"
-          name="password"
-          type="password"
-          value={formValues.password}
-          onChange={handleChange}
-          error={errors.password}
-          showErrorMessage={false}
-        />
+        <div className="space-y-2">
+          <FormInput
+            label="Password"
+            name="password"
+            type="password"
+            placeholder="Enter your password"
+            value={formValues.password}
+            onChange={handleChange}
+            error={errors.password}
+            showErrorMessage={false}
+          />
 
-        <div>
-          <p className="mb-2 text-sm text-[#60777C]">Password must contain:</p>
-
-          <ul className="space-y-1 text-sm">
+          <ul className="space-y-1 text-xs">
             {passwordRequirements.map((requirement) => (
               <li
                 key={requirement.label}
-                className={
+                className={`flex items-center gap-2 ${
                   requirement.isValid
                     ? "text-[#00546F]"
                     : errors.password
                       ? "text-red-600"
                       : "text-[#60777C]"
-                }
+                }`}
               >
-                {requirement.isValid ? "✓" : "–"} {requirement.label}
+                <span
+                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                    requirement.isValid
+                      ? "bg-[#00546F]"
+                      : errors.password
+                        ? "bg-red-600"
+                        : "bg-[#60777C]"
+                  }`}
+                  aria-hidden="true"
+                />
+
+                {requirement.label}
               </li>
             ))}
           </ul>

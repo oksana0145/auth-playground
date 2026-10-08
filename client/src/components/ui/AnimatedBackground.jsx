@@ -7,6 +7,7 @@ function AnimatedBackground() {
       <div className="gradient-blob gradient-blob--teal" />
       <div className="gradient-blob gradient-blob--lime" />
       <div className="gradient-blob gradient-blob--soft" />
+      <div className="gradient-blob gradient-blob--turquoise" />
     </div>
   );
 }

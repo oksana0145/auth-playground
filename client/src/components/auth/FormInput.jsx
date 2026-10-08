@@ -8,6 +8,7 @@ function FormInput({
   value,
   onChange,
   error,
+  placeholder,
   showErrorMessage = true,
 }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +41,7 @@ function FormInput({
           type={inputType}
           value={value}
           onChange={onChange}
+          placeholder={placeholder}
         />
         {isPassword && (
           <button
