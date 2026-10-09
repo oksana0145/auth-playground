@@ -4,6 +4,7 @@ import { register } from "../api/authApi";
 import AuthLayout from "../components/auth/AuthLayout.jsx";
 import FormInput from "../components/auth/FormInput.jsx";
 import Button from "../components/auth/Button.jsx";
+import { validateRegisterForm, getPasswordRequirements } from "../utils/validation.js";
 
 const initialFormValues = {
   firstName: "",
@@ -11,41 +12,6 @@ const initialFormValues = {
   email: "",
   password: "",
 };
-
-function validateRegisterForm(values) {
-  const errors = {};
-  const emailDomain = values.email.split("@")[1];
-
-  if (!values.firstName.trim()) {
-    errors.firstName = "First Name is required";
-  }
-
-  if (!values.lastName.trim()) {
-    errors.lastName = "Last Name is required";
-  }
-
-  if (!values.email) {
-    errors.email = "Email is required";
-  } else if (/\s/.test(values.email)) {
-    errors.email = "Email cannot contain spaces";
-  } else if (!values.email.includes("@")) {
-    errors.email = "Email must contain @";
-  } else if (!emailDomain || !emailDomain.includes(".")) {
-    errors.email = "Email must contain a domain with a dot after @";
-  }
-
-  if (!values.password) {
-    errors.password = "Password is required";
-  } else if (values.password.length < 8) {
-    errors.password = "Password must contain at least 8 characters";
-  } else if (!/[A-Z]/.test(values.password)) {
-    errors.password = "Password must contain at least one uppercase letter";
-  } else if (!/\d/.test(values.password)) {
-    errors.password = "Password must contain at least one number";
-  }
-
-  return errors;
-}
 
 function RegisterPage() {
   const [formValues, setFormValues] = useState(initialFormValues);
@@ -55,20 +21,7 @@ function RegisterPage() {
 
   const navigate = useNavigate();
 
-  const passwordRequirements = [
-    {
-      label: "at least 8 characters",
-      isValid: formValues.password.length >= 8,
-    },
-    {
-      label: "at least 1 uppercase letter",
-      isValid: /[A-Z]/.test(formValues.password),
-    },
-    {
-      label: "at least 1 number",
-      isValid: /\d/.test(formValues.password),
-    },
-  ];
+  const passwordRequirements = getPasswordRequirements(formValues.password);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -104,12 +57,7 @@ function RegisterPage() {
 
     try {
       await register(formValues);
-
-      setSubmitStatus("success");
-      setSubmitMessage("Check your email to verify account");
-      setFormValues(initialFormValues);
-      setErrors({});
-      navigate(`/verify-email`);
+      navigate("/verify-email");
     } catch (error) {
       setSubmitStatus("error");
       setSubmitMessage(error.message);

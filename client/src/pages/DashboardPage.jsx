@@ -1,6 +1,5 @@
 import { useAuth } from "../context/AuthContext.jsx";
-import { useEffect, useRef, useState } from "react";
-import { apiFetch } from "../api/apiFetch.jsx";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api/authApi.js";
 import AnimatedBackground from "../components/ui/AnimatedBackground.jsx";
@@ -15,38 +14,9 @@ import {
 
 function DashboardPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { user, accessToken, updateAccessToken, logoutUser } = useAuth();
+  const { user, logoutUser } = useAuth();
   const navigate = useNavigate();
   const hasLoadedUser = useRef(false);
-
-  useEffect(() => {
-    if (!accessToken || hasLoadedUser.current) {
-      return;
-    }
-
-    hasLoadedUser.current = true;
-
-    const loadCurrentUser = async () => {
-      try {
-        const response = await apiFetch({
-          url: "http://localhost:5000/auth/me",
-          accessToken,
-          updateAccessToken,
-          logoutUser,
-        });
-
-        const data = await response.json();
-
-        console.log("Current user:", data);
-      } catch (error) {
-        console.error(error.message);
-      }
-    };
-
-    if (accessToken) {
-      loadCurrentUser();
-    }
-  }, [accessToken]);
 
   const handleLogout = async () => {
     try {

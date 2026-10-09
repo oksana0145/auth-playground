@@ -42,6 +42,7 @@ function FormInput({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
+          aria-invalid={Boolean(error)}
         />
         {isPassword && (
           <button

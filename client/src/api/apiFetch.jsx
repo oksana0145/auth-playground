@@ -1,49 +1,46 @@
-import { refresh } from "./authApi"
+import { refresh } from "./authApi";
 
 export const apiFetch = async ({
-    url,
-    options = {},
-    accessToken,
-    updateAccessToken,
-    logoutUser,
+  url,
+  options = {},
+  accessToken,
+  updateAccessToken,
+  logoutUser,
 }) => {
-    const sendRequest = async (token) => {
-        return fetch (url, {
-            ...options,
-            headers: {
-                ...options.headers,
-                Authorization: `Bearer ${token}`,
-            },
-            credentials: "include",
-        })
-    }
+  const sendRequest = async (token) => {
+    const headers = new Headers(options.headers);
 
-    let response = await sendRequest(accessToken)
+    headers.set("Authorization", `Bearer ${token}`);
 
-    if (response.status !== 401) {
-        return response
-    }
-
-    try {
-        const refreshData = await refresh()
-
-        const newAccessToken = refreshData.accessToken
-
-        updateAccessToken(newAccessToken)
-
-        response = await sendRequest(newAccessToken)
-
-        return response
-    } catch (error) {
-        logoutUser()
-        throw error
-    }
-}
-
-export const logout = async () => {
-    const response = await fetch (`${API_URL}/logout`, {
-        method: "POST",
+    return fetch( url, {
+        ...options,
+        headers,
         credentials: "include",
-    })
-    return handleResponse(response)
-}
+    });
+  };
+
+  let response = await sendRequest(accessToken);
+
+  if (response.status !== 401) {
+    return response;
+  }
+
+  try {
+    const refreshData = await refresh();
+
+    const newAccessToken = refreshData.accessToken;
+
+    updateAccessToken(newAccessToken);
+
+    response = await sendRequest(newAccessToken);
+
+    if (response.status === 401) {
+        throw new Error("Authentication failed after token refresh");
+    }
+
+    return response;
+  } catch (error) {
+    logoutUser();
+    throw error;
+  }
+};

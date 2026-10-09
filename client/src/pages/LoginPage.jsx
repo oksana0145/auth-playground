@@ -5,30 +5,12 @@ import { useAuth } from "../context/AuthContext.jsx";
 import AuthLayout from "../components/auth/AuthLayout.jsx";
 import FormInput from "../components/auth/FormInput.jsx";
 import Button from "../components/auth/Button.jsx";
+import { validateLoginForm } from "../utils/validation.js";
 
 const initialFormValues = {
   email: "",
   password: "",
 };
-
-function validateLoginForm(values) {
-  const errors = {};
-  const emailDomain = values.email.split("@")[1];
-
-  if (!values.email.trim()) {
-    errors.email = "Invalid email address";
-  } else if (!values.email.includes("@")) {
-    errors.email = "Invalid email address";
-  } else if (!emailDomain || !emailDomain.includes(".")) {
-    errors.email = "Invalid email address";
-  }
-
-  if (!values.password) {
-    errors.password = "Invalid password";
-  }
-
-  return errors;
-}
 
 function LoginPage() {
   const [formValues, setFormValues] = useState(initialFormValues);

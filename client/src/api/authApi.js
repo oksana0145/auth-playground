@@ -30,7 +30,7 @@ export const register = async (formValues) => {
 };
 
 export const verifyEmail = async (token) => {
-  const response = await fetch(`${API_URL}/verify-email?token=${token}`);
+  const response = await fetch(`${API_URL}/verify-email?token=${encodeURIComponent(token)}`);
 
   return handleResponse(response);
 };
