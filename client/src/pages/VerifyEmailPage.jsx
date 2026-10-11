@@ -1,8 +1,11 @@
 import { useEffect, useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { verifyEmail, resendVerificationEmail } from "../api/authApi";
 import AuthLayout from "../components/auth/AuthLayout.jsx";
 import { Mail } from "lucide-react";
+import { isValidEmail } from "../utils/validation.js";
+import FormInput from "../components/auth/FormInput.jsx";
+import Button from "../components/auth/Button.jsx";
 
 const pageContent = {
   "check-email": {
@@ -20,13 +23,14 @@ const pageContent = {
 };
 
 function VerifyEmailPage() {
-  const token = new URLSearchParams(window.location.search).get("token");
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
 
   const initialStatus = token ? "loading" : "check-email";
 
   const [status, setStatus] = useState(initialStatus);
   const [message, setMessage] = useState("");
-  const hasVerified = useRef(false);
+  const verifiedToken = useRef(null);
   const [showResendForm, setShowResendForm] = useState(false);
   const [resendEmail, setResendEmail] = useState("");
   const [resendMessage, setResendMessage] = useState("");
@@ -34,11 +38,13 @@ function VerifyEmailPage() {
   const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
-    if (!token || hasVerified.current) {
+    if (!token || verifiedToken.current === token) {
       return;
     }
 
-    hasVerified.current = true;
+    verifiedToken.current = token;
+    setStatus("loading");
+    setMessage("");
 
     const verifyEmailRequest = async () => {
       try {
@@ -63,6 +69,10 @@ function VerifyEmailPage() {
       : pageContent[status];
 
   const handleResendVerification = async () => {
+    if (!isValidEmail(resendEmail)) {
+      setResendError("Enter a valid email address");
+      return;
+    }
     try {
       setIsResending(true);
       setResendMessage("");
@@ -166,15 +176,9 @@ function VerifyEmailPage() {
           )}
           {showResendForm && !resendMessage && (
             <div className="mt-6 space-y-4 text-left">
-              <label
-                className="block text-sm font-medium text-[#12343D]"
-                htmlFor="resendEmail"
-              >
-                Email
-              </label>
-
-              <input
-                id="resendEmail"
+              <FormInput
+                label="Email"
+                name="resendEmail"
                 type="email"
                 value={resendEmail}
                 onChange={(event) => {
@@ -182,33 +186,25 @@ function VerifyEmailPage() {
                   setResendError("");
                 }}
                 placeholder="Enter your email"
-                className="w-full rounded-xl border border-[#00546F]/15 bg-white/55 px-4 py-3 text-[#12343D] outline-none transition focus:border-[#00546F] focus:ring-2 focus:ring-[#00546F]/15"
+                error={resendError}
               />
 
-              <button
+              <Button
                 type="button"
                 onClick={handleResendVerification}
                 disabled={isResending}
-                className="w-full rounded-xl bg-[#00546F] px-4 py-3 font-medium text-white transition hover:bg-[#004456] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isResending ? "Sending..." : "Send verification email"}
-              </button>
-              {resendError && (
-                <p className="text-center text-sm text-red-600" role="alert">
-                  {resendError}
-                </p>
-              )}
+              </Button>
             </div>
           )}
           {resendMessage && (
-            <div className="mt-6 rounded-xl bg-[#D6FB00]/20 px-4 py-3">
-              <p
-                className="text-center text-sm leading-6 text-[#00546F]"
-                role="status"
-              >
-                {resendMessage}
-              </p>
-            </div>
+            <p
+              className="mt-6 text-center text-sm text-[#00546F]"
+              role="status"
+            >
+              {resendMessage}
+            </p>
           )}
         </div>
       )}

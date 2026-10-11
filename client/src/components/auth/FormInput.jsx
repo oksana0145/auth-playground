@@ -10,6 +10,7 @@ function FormInput({
   error,
   placeholder,
   showErrorMessage = true,
+  autoComplete,
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -42,6 +43,7 @@ function FormInput({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
+          autoComplete={autoComplete}
           aria-invalid={Boolean(error)}
         />
         {isPassword && (

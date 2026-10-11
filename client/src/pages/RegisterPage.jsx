@@ -4,13 +4,31 @@ import { register } from "../api/authApi";
 import AuthLayout from "../components/auth/AuthLayout.jsx";
 import FormInput from "../components/auth/FormInput.jsx";
 import Button from "../components/auth/Button.jsx";
-import { validateRegisterForm, getPasswordRequirements } from "../utils/validation.js";
+import {
+  validateRegisterForm,
+  getPasswordRequirements,
+} from "../utils/validation.js";
 
 const initialFormValues = {
   firstName: "",
   lastName: "",
   email: "",
   password: "",
+};
+
+const requirementColors = {
+  valid: {
+    text: "text-[#00546F]",
+    dot: "bg-[#00546F]",
+  },
+  error: {
+    text: "text-red-600",
+    dot: "bg-red-600",
+  },
+  neutral: {
+    text: "text-[#60777C]",
+    dot: "bg-[#60777C]",
+  },
 };
 
 function RegisterPage() {
@@ -82,6 +100,7 @@ function RegisterPage() {
           value={formValues.firstName}
           onChange={handleChange}
           error={errors.firstName}
+          autoComplete="given-name"
         />
 
         <FormInput
@@ -91,6 +110,7 @@ function RegisterPage() {
           value={formValues.lastName}
           onChange={handleChange}
           error={errors.lastName}
+          autoComplete="family-name"
         />
 
         <FormInput
@@ -101,6 +121,7 @@ function RegisterPage() {
           value={formValues.email}
           onChange={handleChange}
           error={errors.email}
+          autoComplete="email"
         />
 
         <div className="space-y-2">
@@ -113,34 +134,31 @@ function RegisterPage() {
             onChange={handleChange}
             error={errors.password}
             showErrorMessage={false}
+            autoComplete="new-password"
           />
 
           <ul className="space-y-1 text-xs">
-            {passwordRequirements.map((requirement) => (
-              <li
-                key={requirement.label}
-                className={`flex items-center gap-2 ${
-                  requirement.isValid
-                    ? "text-[#00546F]"
-                    : errors.password
-                      ? "text-red-600"
-                      : "text-[#60777C]"
-                }`}
-              >
-                <span
-                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                    requirement.isValid
-                      ? "bg-[#00546F]"
-                      : errors.password
-                        ? "bg-red-600"
-                        : "bg-[#60777C]"
-                  }`}
-                  aria-hidden="true"
-                />
+            {passwordRequirements.map((requirement) => {
+              const status = requirement.isValid
+                ? "valid"
+                : errors.password
+                  ? "error"
+                  : "neutral";
 
-                {requirement.label}
-              </li>
-            ))}
+              return (
+                <li
+                  key={requirement.label}
+                  className={`flex items-center gap-2 ${requirementColors[status].text}`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${requirementColors[status].dot}`}
+                    aria-hidden="true"
+                  />
+
+                  {requirement.label}
+                </li>
+              );
+            })}
           </ul>
         </div>
 

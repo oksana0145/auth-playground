@@ -1,5 +1,5 @@
-import { useAuth } from "../context/AuthContext.jsx";
-import { useRef, useState } from "react";
+import { useAuth } from "../context/useAuth.js";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api/authApi.js";
 import AnimatedBackground from "../components/ui/AnimatedBackground.jsx";
@@ -16,7 +16,6 @@ function DashboardPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { user, logoutUser } = useAuth();
   const navigate = useNavigate();
-  const hasLoadedUser = useRef(false);
 
   const handleLogout = async () => {
     try {

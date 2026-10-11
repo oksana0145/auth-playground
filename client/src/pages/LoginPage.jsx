@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login, resendVerificationEmail } from "../api/authApi";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/useAuth.js";
 import AuthLayout from "../components/auth/AuthLayout.jsx";
 import FormInput from "../components/auth/FormInput.jsx";
 import Button from "../components/auth/Button.jsx";
@@ -25,20 +25,22 @@ function LoginPage() {
 
   const { loginUser } = useAuth();
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-
+  const resetMessages = () => {
     setSubmitError("");
     setShowResendVerification(false);
     setResendMessage("");
     setResendError("");
+  };
 
-    const nextFormValues = {
-      ...formValues,
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    resetMessages();
+
+    setFormValues((prevValues) => ({
+      ...prevValues,
       [name]: value,
-    };
-
-    setFormValues(nextFormValues);
+    }));
 
     setErrors((currentErrors) => {
       const nextErrors = { ...currentErrors };
@@ -49,10 +51,7 @@ function LoginPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setSubmitError("");
-    setShowResendVerification(false);
-    setResendMessage("");
-    setResendError("");
+    resetMessages();
 
     const validationErrors = validateLoginForm(formValues);
     setErrors(validationErrors);
@@ -110,6 +109,7 @@ function LoginPage() {
           value={formValues.email}
           onChange={handleChange}
           error={errors.email}
+          autoComplete="username"
         />
 
         <FormInput
@@ -119,6 +119,7 @@ function LoginPage() {
           value={formValues.password}
           onChange={handleChange}
           error={errors.password}
+          autoComplete="current-password"
         />
 
         {submitError && (

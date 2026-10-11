@@ -1,7 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { refresh, getMe } from "../api/authApi.js";
-
-const AuthContext = createContext(null);
+import { AuthContext } from "./AuthContext.js";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -22,25 +21,37 @@ export function AuthProvider({ children }) {
     setAccessToken(newAccessToken);
   };
 
-  const restoreSession = async () => {
-    try {
-      const refreshData = await refresh();
-      const newAccessToken = refreshData.accessToken;
-
-      const userData = await getMe(newAccessToken);
-
-      setAccessToken(newAccessToken);
-      setUser(userData.user);
-    } catch {
-      setAccessToken(null);
-      setUser(null);
-    } finally {
-      setIsAuthLoading(false);
-    }
-  };
-
   useEffect(() => {
+    let cancelled = false;
+
+    const restoreSession = async () => {
+      try {
+        const refreshData = await refresh();
+        const newAccessToken = refreshData.accessToken;
+
+        const userData = await getMe(newAccessToken);
+
+        if (!cancelled) {
+          setAccessToken(newAccessToken);
+          setUser(userData.user);
+        }
+      } catch {
+        if (!cancelled) {
+          setAccessToken(null);
+          setUser(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsAuthLoading(false);
+        }
+      }
+    };
+
     restoreSession();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const isAuthenticated = Boolean(user && accessToken);
@@ -60,14 +71,4 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error("useAuth must be used inside AuthProvider");
-  }
-
-  return context;
 }
