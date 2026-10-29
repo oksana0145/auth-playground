@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login, resendVerificationEmail } from "../api/authApi";
+import { login } from "../api/authApi";
 import { useAuth } from "../context/useAuth.js";
 import AuthLayout from "../components/auth/AuthLayout.jsx";
 import FormInput from "../components/auth/FormInput.jsx";
 import Button from "../components/auth/Button.jsx";
 import { validateLoginForm } from "../utils/validation.js";
+import { useResendVerification } from "../hooks/useResendVerification.js";
 
 const initialFormValues = {
   email: "",
@@ -18,18 +19,20 @@ function LoginPage() {
   const [submitError, setSubmitError] = useState("");
   const [showResendVerification, setShowResendVerification] = useState(false);
   const navigate = useNavigate();
-  const [resendMessage, setResendMessage] = useState("");
-  const [isResending, setIsResending] = useState(false);
-  const [resendError, setResendError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const { loginUser } = useAuth();
+  const {
+    resendMessage,
+    resendError,
+    isResending,
+    resendVerification,
+    resetResendState,
+  } = useResendVerification();
 
   const resetMessages = () => {
     setSubmitError("");
     setShowResendVerification(false);
-    setResendMessage("");
-    setResendError("");
+    resetResendState();
   };
 
   const handleChange = (event) => {
@@ -75,22 +78,6 @@ function LoginPage() {
       }
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-    try {
-      setIsResending(true);
-      setResendMessage("");
-      setResendError("");
-
-      const data = await resendVerificationEmail(formValues.email);
-
-      setResendMessage(data.message);
-    } catch (error) {
-      setResendError(error.message);
-    } finally {
-      setIsResending(false);
     }
   };
 
@@ -140,7 +127,7 @@ function LoginPage() {
                   Didn&apos;t receive the verification email?{" "}
                   <button
                     type="button"
-                    onClick={handleResendVerification}
+                    onClick={() => resendVerification(formValues.email)}
                     disabled={isResending}
                     className="font-medium text-[#00546F] underline underline-offset-2 transition hover:text-[#004456] disabled:cursor-not-allowed disabled:opacity-50"
                   >

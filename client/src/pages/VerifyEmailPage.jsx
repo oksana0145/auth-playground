@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { verifyEmail, resendVerificationEmail } from "../api/authApi";
+import { verifyEmail } from "../api/authApi";
 import AuthLayout from "../components/auth/AuthLayout.jsx";
 import { Mail } from "lucide-react";
 import { isValidEmail } from "../utils/validation.js";
 import FormInput from "../components/auth/FormInput.jsx";
 import Button from "../components/auth/Button.jsx";
+import { useResendVerification } from "../hooks/useResendVerification.js";
 
 const pageContent = {
   "check-email": {
@@ -33,9 +34,13 @@ function VerifyEmailPage() {
   const verifiedToken = useRef(null);
   const [showResendForm, setShowResendForm] = useState(false);
   const [resendEmail, setResendEmail] = useState("");
-  const [resendMessage, setResendMessage] = useState("");
-  const [resendError, setResendError] = useState("");
-  const [isResending, setIsResending] = useState(false);
+  const {
+    resendMessage,
+    resendError,
+    isResending,
+    resendVerification,
+    setResendError,
+  } = useResendVerification();
 
   useEffect(() => {
     if (!token || verifiedToken.current === token) {
@@ -73,25 +78,14 @@ function VerifyEmailPage() {
       setResendError("Enter a valid email address");
       return;
     }
-    try {
-      setIsResending(true);
-      setResendMessage("");
-      setResendError("");
 
-      const data = await resendVerificationEmail(resendEmail);
-
-      setResendMessage(data.message);
-    } catch (error) {
-      setResendError(error.message);
-    } finally {
-      setIsResending(false);
-    }
+    await resendVerification(resendEmail);
   };
 
   return (
     <AuthLayout>
-      {status === "check-email" && (
-        <div className="text-center">
+      <div className="text-center">
+        {status === "check-email" && (
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#D6FB00]/65">
             <Mail
               size={28}
@@ -100,13 +94,42 @@ function VerifyEmailPage() {
               aria-hidden="true"
             />
           </div>
+        )}
 
-          <h1 className="mb-4 text-2xl font-semibold text-[#12343D]">
-            {content.title}
-          </h1>
+        {status === "loading" && (
+          <div
+            className="mx-auto mb-6 h-8 w-8 animate-spin rounded-full border-2 border-[#00546F]/20 border-t-[#00546F]"
+            role="status"
+            aria-label="Verifying email"
+          />
+        )}
 
-          <p className="text-sm leading-6 text-[#60777C]">{content.text}</p>
+        {status === "success" && (
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#D6FB00]/30 text-xl font-semibold text-[#00546F]">
+            ✓
+          </div>
+        )}
 
+        {status === "error" && (
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-xl font-semibold text-red-600">
+            !
+          </div>
+        )}
+
+        <h1 className="mb-4 text-2xl font-semibold text-[#12343D]">
+          {content.title}
+        </h1>
+
+        <p
+          className={`text-sm leading-6 ${
+            status === "error" ? "text-red-600" : "text-[#60777C]"
+          } ${status === "success" ? "mb-6" : ""}`}
+          role={status === "error" ? "alert" : undefined}
+        >
+          {content.text}
+        </p>
+
+        {status === "check-email" && (
           <p className="mt-6 text-sm text-[#60777C]">
             Already verified?{" "}
             <Link
@@ -116,98 +139,65 @@ function VerifyEmailPage() {
               Sign in
             </Link>
           </p>
-        </div>
-      )}
+        )}
 
-      {status === "loading" && (
-        <div className="text-center">
-          <div className="mx-auto mb-6 h-8 w-8 animate-spin rounded-full border-2 border-[#00546F]/20 border-t-[#00546F]" />
-
-          <h1 className="mb-4 text-2xl font-semibold text-[#12343D]">
-            {content.title}
-          </h1>
-
-          <p className="text-sm leading-6 text-[#60777C]">{content.text}</p>
-        </div>
-      )}
-      {status === "success" && (
-        <div className="text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#D6FB00]/30 text-xl font-semibold text-[#00546F]">
-            ✓
-          </div>
-
-          <h1 className="mb-4 text-2xl font-semibold text-[#12343D]">
-            {content.title}
-          </h1>
-
-          <p className="mb-6 text-sm leading-6 text-[#60777C]">
-            {content.text}
-          </p>
-
+        {status === "success" && (
           <Link
             className="block w-full rounded-xl bg-[#00546F] px-4 py-3 font-medium text-white transition hover:bg-[#004456] focus:outline-none focus:ring-2 focus:ring-[#00546F]/30 focus:ring-offset-2"
             to="/login"
           >
             Go to login
           </Link>
-        </div>
-      )}
-      {status === "error" && (
-        <div className="text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-xl font-semibold text-red-600">
-            !
-          </div>
+        )}
 
-          <h1 className="mb-4 text-2xl font-semibold text-[#12343D]">
-            {content.title}
-          </h1>
-
-          <p className="text-sm leading-6 text-red-600" role="alert">
-            {content.text}
-          </p>
-          {!showResendForm && !resendMessage && (
-            <button
-              type="button"
-              onClick={() => setShowResendForm(true)}
-              className="mt-6 font-medium text-[#00546F] underline underline-offset-2 transition hover:text-[#004456]"
-            >
-              Request a new verification email
-            </button>
-          )}
-          {showResendForm && !resendMessage && (
-            <div className="mt-6 space-y-4 text-left">
-              <FormInput
-                label="Email"
-                name="resendEmail"
-                type="email"
-                value={resendEmail}
-                onChange={(event) => {
-                  setResendEmail(event.target.value);
-                  setResendError("");
-                }}
-                placeholder="Enter your email"
-                error={resendError}
-              />
-
-              <Button
+        {status === "error" && (
+          <>
+            {!showResendForm && !resendMessage && (
+              <button
                 type="button"
-                onClick={handleResendVerification}
-                disabled={isResending}
+                onClick={() => setShowResendForm(true)}
+                className="mt-6 font-medium text-[#00546F] underline underline-offset-2 transition hover:text-[#004456]"
               >
-                {isResending ? "Sending..." : "Send verification email"}
-              </Button>
-            </div>
-          )}
-          {resendMessage && (
-            <p
-              className="mt-6 text-center text-sm text-[#00546F]"
-              role="status"
-            >
-              {resendMessage}
-            </p>
-          )}
-        </div>
-      )}
+                Request a new verification email
+              </button>
+            )}
+
+            {showResendForm && !resendMessage && (
+              <div className="mt-6 space-y-4 text-left">
+                <FormInput
+                  label="Email"
+                  name="resendEmail"
+                  type="email"
+                  value={resendEmail}
+                  onChange={(event) => {
+                    setResendEmail(event.target.value);
+                    setResendError("");
+                  }}
+                  placeholder="Enter your email"
+                  error={resendError}
+                />
+
+                <Button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={isResending}
+                >
+                  {isResending ? "Sending..." : "Send verification email"}
+                </Button>
+              </div>
+            )}
+
+            {resendMessage && (
+              <p
+                className="mt-6 text-center text-sm text-[#00546F]"
+                role="status"
+              >
+                {resendMessage}
+              </p>
+            )}
+          </>
+        )}
+      </div>
     </AuthLayout>
   );
 }
