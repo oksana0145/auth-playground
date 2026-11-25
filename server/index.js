@@ -1,9 +1,9 @@
-import "assert";
 import express from 'express';
 import authRoutes from './routes/auth.routes.js';
 import { connectDB } from './config/db.js';
 import cors from "cors";
 import cookieParser from 'cookie-parser'
+import "dotenv/config";
 
 connectDB();
 
@@ -28,6 +28,17 @@ app.get("/health", (req, res) => {
 
 app.use("/auth", authRoutes);
 
-app.listen (PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server startup failed:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

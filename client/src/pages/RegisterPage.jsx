@@ -74,8 +74,14 @@ function RegisterPage() {
     setSubmitStatus("loading");
 
     try {
-      await register(formValues);
-      navigate("/verify-email");
+      const data = await register(formValues);
+
+      navigate("/verify-email", {
+        state: {
+          verificationEmailSent: data.verificationEmailSent,
+          email: formValues.email.trim().toLowerCase(),
+        },
+      });
     } catch (error) {
       setSubmitStatus("error");
       setSubmitMessage(error.message);

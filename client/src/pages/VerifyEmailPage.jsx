@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { verifyEmail } from "../api/authApi";
 import AuthLayout from "../components/auth/AuthLayout.jsx";
 import { Mail } from "lucide-react";
@@ -24,16 +24,33 @@ const pageContent = {
 };
 
 function VerifyEmailPage() {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 
-  const initialStatus = token ? "loading" : "check-email";
+  const emailDeliveryFailed =
+    location.state?.verificationEmailSent === false;
+
+  const initialStatus = token
+    ? "loading"
+    : emailDeliveryFailed
+      ? "error"
+      : "check-email";
 
   const [status, setStatus] = useState(initialStatus);
-  const [message, setMessage] = useState("");
+
+  const [message, setMessage] = useState(
+    emailDeliveryFailed
+      ? "Your account was created, but we couldn't send the verification email. Request a new link below."
+      : "",
+  );
+
   const verifiedToken = useRef(null);
-  const [showResendForm, setShowResendForm] = useState(false);
-  const [resendEmail, setResendEmail] = useState("");
+
+  const [showResendForm, setShowResendForm] = useState(emailDeliveryFailed);
+
+  const [resendEmail, setResendEmail] = useState(location.state?.email ?? "");
+
   const {
     resendMessage,
     resendError,
@@ -67,10 +84,18 @@ function VerifyEmailPage() {
 
   const content =
     status === "error"
-      ? {
-          title: "Verification failed",
-          text: message || "This link is invalid or expired.",
-        }
+      ? resendMessage
+        ? {
+            title: "Check your email",
+            text: "Your verification email request was processed. If your account is awaiting verification, check your inbox for a new link.",
+          }
+        : {
+            title:
+              emailDeliveryFailed && !token
+                ? "Account created — email not sent"
+                : "Verification failed",
+            text: message || "This link is invalid or expired.",
+          }
       : pageContent[status];
 
   const handleResendVerification = async () => {
@@ -110,7 +135,7 @@ function VerifyEmailPage() {
           </div>
         )}
 
-        {status === "error" && (
+        {status === "error" && !resendMessage && (
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-xl font-semibold text-red-600">
             !
           </div>
@@ -122,9 +147,11 @@ function VerifyEmailPage() {
 
         <p
           className={`text-sm leading-6 ${
-            status === "error" ? "text-red-600" : "text-[#60777C]"
+            status === "error" && !resendMessage
+              ? "text-red-600"
+              : "text-[#60777C]"
           } ${status === "success" ? "mb-6" : ""}`}
-          role={status === "error" ? "alert" : undefined}
+          role={status === "error" && !resendMessage ? "alert" : undefined}
         >
           {content.text}
         </p>

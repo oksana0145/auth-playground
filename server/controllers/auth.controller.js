@@ -4,6 +4,10 @@ import crypto from "crypto";
 import { sendVerificationEmail } from "../utils/email.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 import jwt from "jsonwebtoken";
+import {
+  refreshCookieOptions,
+  REFRESH_COOKIE_MAX_AGE,
+} from "../config/cookies.js";
 
 const VERIFICATION_TOKEN_LIFETIME = 24 * 60 * 60 * 1000;
 
@@ -18,13 +22,39 @@ export const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
 
-    if (!firstName || !lastName || !email || !password) {
+    if (
+      typeof firstName !== "string" ||
+      !firstName.trim() ||
+      typeof lastName !== "string" ||
+      !lastName.trim() ||
+      typeof email !== "string" ||
+      !email.trim() ||
+      typeof password !== "string" ||
+      !password
+    ) {
       return res.status(400).json({
         message: "All fields are required",
       });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({
+        message: "Enter a valid email address",
+      });
+    }
+
+    if (
+      password.length < 8 ||
+      !/[A-Z]/.test(password) ||
+      !/[0-9]/.test(password)
+    ) {
+      return res.status(400).json({
+        message:
+          "Password must contain at least 8 characters, one uppercase letter and one number",
+      });
+    }
 
     const existingUser = await User.findOne({ email: normalizedEmail });
 
@@ -50,11 +80,21 @@ export const register = async (req, res) => {
     });
 
     const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
-    await sendVerificationEmail(user.email, verificationLink);
+    const verificationEmailSent = await sendVerificationEmail(
+      user.email,
+      verificationLink,
+    )
+      .then(() => true)
+      .catch((emailError) => {
+        console.error("Verification email failed:", emailError.message);
+        return false;
+      });
 
     return res.status(201).json({
-      message:
-        "User created successfully. Check your email to verify account. This verification link is valid for 24 hours.",
+      message: verificationEmailSent
+        ? "User created successfully. Check your email to verify your account."
+        : "Your account was created, but we couldn't send the verification email. Go to Sign in, enter your credentials, and request a new verification email.",
+      verificationEmailSent,
       user: {
         id: user._id,
         firstName: user.firstName,
@@ -65,7 +105,13 @@ export const register = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log("Register error:", error.message);
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: "Email already exists",
+      });
+    }
+
+    console.error("Register error:", error.message);
 
     return res.status(500).json({
       message: "Server error",
@@ -77,7 +123,7 @@ export const verifyEmail = async (req, res) => {
   try {
     const { token } = req.query;
 
-    if (!token) {
+    if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) {
       return res.status(400).json({
         message: "Verification token is required",
       });
@@ -124,7 +170,12 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (
+      typeof email !== "string" ||
+      !email.trim() ||
+      typeof password !== "string" ||
+      !password
+    ) {
       return res.status(400).json({
         message: "Email and password are required.",
       });
@@ -161,10 +212,8 @@ export const login = async (req, res) => {
     await user.save();
 
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      ...refreshCookieOptions,
+      maxAge: REFRESH_COOKIE_MAX_AGE,
     });
 
     return res.status(200).json({
@@ -253,20 +302,27 @@ export const refresh = async (req, res) => {
     await user.save();
 
     res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      ...refreshCookieOptions,
+      maxAge: REFRESH_COOKIE_MAX_AGE,
     });
 
     return res.status(200).json({
       accessToken: newAccessToken,
     });
   } catch (error) {
+    if (
+      error instanceof jwt.TokenExpiredError ||
+      error instanceof jwt.JsonWebTokenError
+    ) {
+      return res.status(401).json({
+        message: "Invalid or expired refresh token",
+      });
+    }
+
     console.error("Refresh token error:", error.message);
 
-    return res.status(401).json({
-      message: "Invalid or expired refresh token",
+    return res.status(500).json({
+      message: "Server error",
     });
   }
 };
@@ -290,11 +346,7 @@ export const logout = async (req, res) => {
       await user.save();
     }
 
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-    });
+    res.clearCookie("refreshToken", refreshCookieOptions);
 
     return res.status(200).json({
       message: "Logout successful",
@@ -312,13 +364,19 @@ export const resendVerificationEmail = async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email) {
+    if (typeof email !== "string" || !email.trim()) {
       return res.status(400).json({
         message: "Email is required",
       });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({
+        message: "Enter a valid email address",
+      });
+    }
 
     const user = await User.findOne({
       email: normalizedEmail,

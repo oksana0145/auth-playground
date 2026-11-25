@@ -12,10 +12,10 @@ export const apiFetch = async ({
 
     headers.set("Authorization", `Bearer ${token}`);
 
-    return fetch( url, {
-        ...options,
-        headers,
-        credentials: "include",
+    return fetch(url, {
+      ...options,
+      headers,
+      credentials: "include",
     });
   };
 
@@ -34,13 +34,18 @@ export const apiFetch = async ({
 
     response = await sendRequest(newAccessToken);
 
-    if (response.status === 401) {
-        throw new Error("Authentication failed after token refresh");
-    }
+   if (response.status === 401) {
+     const error = new Error("Authentication failed after token refresh");
+     error.status = 401;
+     throw error;
+   }
 
     return response;
   } catch (error) {
-    logoutUser();
+    if (error.status === 401) {
+      logoutUser();
+    }
+
     throw error;
   }
 };
