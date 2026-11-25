@@ -1,72 +1,232 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState, useRef } from "react";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
+import { verifyEmail } from "../api/authApi";
+import AuthLayout from "../components/auth/AuthLayout.jsx";
+import { Mail } from "lucide-react";
+import { isValidEmail } from "../utils/validation.js";
+import FormInput from "../components/auth/FormInput.jsx";
+import Button from "../components/auth/Button.jsx";
+import { useResendVerification } from "../hooks/useResendVerification.js";
+
+const pageContent = {
+  "check-email": {
+    title: "Check your email",
+    text: "We sent a verification link to your email address. Open that link to confirm your account before signing in. The link is valid for 24 hours.",
+  },
+  loading: {
+    title: "Verifying your email...",
+    text: "Please wait while we confirm your account.",
+  },
+  success: {
+    title: "Email verified successfully",
+    text: "Thank you for confirming your email. You can now sign in.",
+  },
+};
 
 function VerifyEmailPage() {
-  const token = new URLSearchParams(window.location.search).get("token")
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
 
-  const [status, setStatus] = useState("loading")
-  const [message, setMessage] = useState("")
+  const emailDeliveryFailed =
+    location.state?.verificationEmailSent === false;
+
+  const initialStatus = token
+    ? "loading"
+    : emailDeliveryFailed
+      ? "error"
+      : "check-email";
+
+  const [status, setStatus] = useState(initialStatus);
+
+  const [message, setMessage] = useState(
+    emailDeliveryFailed
+      ? "Your account was created, but we couldn't send the verification email. Request a new link below."
+      : "",
+  );
+
+  const verifiedToken = useRef(null);
+
+  const [showResendForm, setShowResendForm] = useState(emailDeliveryFailed);
+
+  const [resendEmail, setResendEmail] = useState(location.state?.email ?? "");
+
+  const {
+    resendMessage,
+    resendError,
+    isResending,
+    resendVerification,
+    setResendError,
+  } = useResendVerification();
 
   useEffect(() => {
-    const verifyEmail = async () => {
-      if (!token) {
-        setStatus("error")
-        setMessage("Verification token is missing")
-        return
-      }
-
-      try {
-        const response = await fetch(
-          `http://localhost:5000/auth/verify-email?token=${token}`
-        )
-
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(data.message || "Email verification failed")
-        }
-
-        setStatus("success")
-        setMessage(data.message)
-      } catch (error) {
-        setStatus("error")
-        setMessage(error.message)
-      }
+    if (!token || verifiedToken.current === token) {
+      return;
     }
 
-    verifyEmail()
-  }, [token])
-  
+    verifiedToken.current = token;
+    setStatus("loading");
+    setMessage("");
+
+    const verifyEmailRequest = async () => {
+      try {
+        await verifyEmail(token);
+
+        setStatus("success");
+      } catch (error) {
+        setStatus("error");
+        setMessage(error.message);
+      }
+    };
+
+    verifyEmailRequest();
+  }, [token]);
+
+  const content =
+    status === "error"
+      ? resendMessage
+        ? {
+            title: "Check your email",
+            text: "Your verification email request was processed. If your account is awaiting verification, check your inbox for a new link.",
+          }
+        : {
+            title:
+              emailDeliveryFailed && !token
+                ? "Account created — email not sent"
+                : "Verification failed",
+            text: message || "This link is invalid or expired.",
+          }
+      : pageContent[status];
+
+  const handleResendVerification = async () => {
+    if (!isValidEmail(resendEmail)) {
+      setResendError("Enter a valid email address");
+      return;
+    }
+
+    await resendVerification(resendEmail);
+  };
+
   return (
-    <section className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 text-center shadow-lg ring-1 ring-slate-200">
-        <h1 className="text-2xl font-semibold text-slate-900">
-          Check your email
+    <AuthLayout>
+      <div className="text-center">
+        {status === "check-email" && (
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#D6FB00]/65">
+            <Mail
+              size={28}
+              strokeWidth={1.75}
+              className="text-[#00546F]"
+              aria-hidden="true"
+            />
+          </div>
+        )}
+
+        {status === "loading" && (
+          <div
+            className="mx-auto mb-6 h-8 w-8 animate-spin rounded-full border-2 border-[#00546F]/20 border-t-[#00546F]"
+            role="status"
+            aria-label="Verifying email"
+          />
+        )}
+
+        {status === "success" && (
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#D6FB00]/30 text-xl font-semibold text-[#00546F]">
+            ✓
+          </div>
+        )}
+
+        {status === "error" && !resendMessage && (
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-xl font-semibold text-red-600">
+            !
+          </div>
+        )}
+
+        <h1 className="mb-4 text-2xl font-semibold text-[#12343D]">
+          {content.title}
         </h1>
 
-        <p className="mt-4 text-sm leading-6 text-slate-600">
-          We sent a verification link to your email address. Open that link to
-          confirm your account before signing in.
+        <p
+          className={`text-sm leading-6 ${
+            status === "error" && !resendMessage
+              ? "text-red-600"
+              : "text-[#60777C]"
+          } ${status === "success" ? "mb-6" : ""}`}
+          role={status === "error" && !resendMessage ? "alert" : undefined}
+        >
+          {content.text}
         </p>
 
-        <button
-          className="mt-8 w-full rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          type="button"
-        >
-          Resend verification link
-        </button>
+        {status === "check-email" && (
+          <p className="mt-6 text-sm text-[#60777C]">
+            Already verified?{" "}
+            <Link
+              className="font-medium text-[#00546F] transition hover:text-[#004456]"
+              to="/login"
+            >
+              Sign in
+            </Link>
+          </p>
+        )}
 
-        <div className="mt-6 flex justify-center gap-4 text-sm">
-          <Link className="font-medium text-indigo-600 hover:text-indigo-700" to="/login">
-            Login
+        {status === "success" && (
+          <Link
+            className="block w-full rounded-xl bg-[#00546F] px-4 py-3 font-medium text-white transition hover:bg-[#004456] focus:outline-none focus:ring-2 focus:ring-[#00546F]/30 focus:ring-offset-2"
+            to="/login"
+          >
+            Go to login
           </Link>
-          <Link className="font-medium text-indigo-600 hover:text-indigo-700" to="/register">
-            Register
-          </Link>
-        </div>
+        )}
+
+        {status === "error" && (
+          <>
+            {!showResendForm && !resendMessage && (
+              <button
+                type="button"
+                onClick={() => setShowResendForm(true)}
+                className="mt-6 font-medium text-[#00546F] underline underline-offset-2 transition hover:text-[#004456]"
+              >
+                Request a new verification email
+              </button>
+            )}
+
+            {showResendForm && !resendMessage && (
+              <div className="mt-6 space-y-4 text-left">
+                <FormInput
+                  label="Email"
+                  name="resendEmail"
+                  type="email"
+                  value={resendEmail}
+                  onChange={(event) => {
+                    setResendEmail(event.target.value);
+                    setResendError("");
+                  }}
+                  placeholder="Enter your email"
+                  error={resendError}
+                />
+
+                <Button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={isResending}
+                >
+                  {isResending ? "Sending..." : "Send verification email"}
+                </Button>
+              </div>
+            )}
+
+            {resendMessage && (
+              <p
+                className="mt-6 text-center text-sm text-[#00546F]"
+                role="status"
+              >
+                {resendMessage}
+              </p>
+            )}
+          </>
+        )}
       </div>
-    </section>
-  )
+    </AuthLayout>
+  );
 }
 
-export default VerifyEmailPage
+export default VerifyEmailPage;

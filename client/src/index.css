@@ -1,2 +1,95 @@
 @import "tailwindcss";
 
+.gradient-blob {
+  position: absolute;
+  width: 140vw;
+  height: 25vw;
+  min-width: 650px;
+  min-height: 180px;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.85;
+  will-change: transform;
+}
+
+.gradient-blob--teal {
+  top: -25%;
+  left: -35%;
+  width: 110vw;
+  height: 55vw;
+  background: #00546f;
+  opacity: 0.85;
+  animation: float-teal 9s ease-in-out infinite alternate;
+}
+
+.gradient-blob--lime {
+  bottom: -20%;
+  left: -30%;
+  width: 95vw;
+  height: 55vw;
+  min-height: 350px;
+  background: #d6fb00;
+  opacity: 0.6;
+  animation: float-lime 8s ease-in-out infinite alternate;
+}
+
+.gradient-blob--soft {
+  top: 35%;
+  left: 10%;
+  background: #ecffb6;
+  opacity: 0.45;
+  animation: float-soft 10s ease-in-out infinite alternate;
+}
+
+.gradient-blob--turquoise {
+  bottom: -25%;
+  right: -35%;
+  width: 125vw;
+  height: 32vw;
+  min-height: 280px;
+  background: #20b7b1;
+  opacity: 0.55;
+  animation: float-turquoise 8s ease-in-out infinite alternate;
+}
+
+@keyframes float-teal {
+  from {
+    transform: translate(-5%, -5%) rotate(-20deg);
+  }
+  to {
+    transform: translate(12%, 12%) rotate(-35deg);
+  }
+}
+
+@keyframes float-lime {
+  from {
+    transform: translate(-5%, 5%) rotate(-20deg);
+  }
+  to {
+    transform: translate(12%, -12%) rotate(-35deg);
+  }
+}
+
+@keyframes float-soft {
+  from {
+    transform: translate(0, 0) rotate(25deg);
+  }
+  to {
+    transform: translate(-25%, 20%) rotate(45deg);
+  }
+}
+
+@keyframes float-turquoise {
+  from {
+    transform: translate(10%, 10%) rotate(-25deg);
+  }
+  to {
+    transform: translate(-12%, -15%) rotate(-35deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-blob {
+    animation: none;
+  }
+}
